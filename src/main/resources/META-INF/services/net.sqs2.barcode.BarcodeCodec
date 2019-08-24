@@ -1,0 +1,3 @@
+net.sqs2.barcode.impl.ZxingBarcodeCodec
+net.sqs2.barcode.impl.ZxingGeneralBarcodeCodec
+net.sqs2.barcode.impl.GoogleQREncoder
