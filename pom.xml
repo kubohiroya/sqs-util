@@ -83,8 +83,8 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:https://bitbucket.org/kubohiroya/sqs-util</connection>
-		<developerConnection>scm:hg:ssh://hg@bitbucket.org/kubohiroya/sqs-util</developerConnection>
+		<connection>https://github.com/kubohiroya/sqs-util.git</connection>
+		<developerConnection>https://github.com/kubohiroya/sqs-util.git</developerConnection>
 	</scm>
 
 	<build>
