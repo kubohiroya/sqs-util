@@ -27,8 +27,8 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
-
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class RemoteWindowAccessorImpl extends UnicastRemoteObject implements RemoteWindowAccessor {
 	private static final long serialVersionUID = 0L;
@@ -49,7 +49,7 @@ class RemoteWindowAccessorImpl extends UnicastRemoteObject implements RemoteWind
 			if (clientAddress.isLoopbackAddress() || clientAddress.equals(InetAddress.getLocalHost())) {
 				this.window.toFront();
 			}else{
-				Logger.getLogger(this.getClass().getName()).warn("insecure remote message from:"+clientAddress.getHostAddress());
+				Logger.getLogger(this.getClass().getName()).log(Level.INFO, "insecure remote message from:"+clientAddress.getHostAddress());
 			}
 		} catch (ServerNotActiveException ignore) {
 		} catch (UnknownHostException ignore) {

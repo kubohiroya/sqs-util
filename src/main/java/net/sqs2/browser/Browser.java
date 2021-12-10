@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.jnlp.UnavailableServiceException;
-
 public class Browser {
 
 	public static void showDocument(File file) {
@@ -49,13 +47,6 @@ public class Browser {
 					return;
 				} catch (IOException ex1) {
 				} catch (ClassCastException ex) {
-				}
-
-				try {
-					new JNLPBrowserLauncher().showDocument(url);
-					return;
-				} catch (UnavailableServiceException ex2) {
-				} catch (NullPointerException ex2) {
 				}
 
 				new NativeBrowserLauncher().showDocument(url);

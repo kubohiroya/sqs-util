@@ -93,7 +93,7 @@ public class Resource {
 		return resourceBundle;
 	}
 
-	public static String _(String name, Locale locale, String key, Object... args){
+	public static String __(String name, Locale locale, String key, Object... args){
 		try{
 			ResourceBundle resourceBundle = getResourceBundleValue(name, locale);
 			return format(resourceBundle, key, args);
@@ -107,7 +107,7 @@ public class Resource {
 		Logger.getLogger("ERROR ").severe("ResourceName=" + name + ", Locale=" + locale.toString() + ", Key="+key);
 	}
 
-	public static String _(String name, Locale locale, String key){
+	public static String __(String name, Locale locale, String key){
 		try{
 			ResourceBundle resourceBundle = getResourceBundleValue(name, locale);
 			return format(resourceBundle, key);
@@ -117,7 +117,7 @@ public class Resource {
 		}
 	}
 
-	public static Appendable _(Appendable appendable, String name, Locale locale, String key, Object... args){
+	public static Appendable __(Appendable appendable, String name, Locale locale, String key, Object... args){
 		try{
 			ResourceBundle resourceBundle = getResourceBundleValue(name, locale);
 			return format(appendable, resourceBundle, key, args);
@@ -127,7 +127,7 @@ public class Resource {
 		}
 	}
 	
-	public static Appendable _(Appendable appendable, String name, Locale locale, String key){
+	public static Appendable __(Appendable appendable, String name, Locale locale, String key){
 		try{
 			ResourceBundle resourceBundle = getResourceBundleValue(name, locale);
 			return format(appendable, resourceBundle, key);
@@ -137,32 +137,32 @@ public class Resource {
 		}
 	}
 	
-	public static String _(String name, String key, Object... args){
-		return _(name, Locale.getDefault(), key, args);
+	public static String __(String name, String key, Object... args){
+		return __(name, Locale.getDefault(), key, args);
 	}
 	
-	public static String _(String name, String key){
-		return _(name, Locale.getDefault(), key);
+	public static String __(String name, String key){
+		return __(name, Locale.getDefault(), key);
 	}
 	
-	public static Appendable _(Appendable appendable, String name, String key, Object... args){
-		return _(appendable, name, Locale.getDefault(), key, args);
+	public static Appendable __(Appendable appendable, String name, String key, Object... args){
+		return __(appendable, name, Locale.getDefault(), key, args);
 	}
 	
-	public static Appendable _(Appendable appendable, String name, String key){
-		return _(appendable, name, Locale.getDefault(), key);
+	public static Appendable __(Appendable appendable, String name, String key){
+		return __(appendable, name, Locale.getDefault(), key);
 	}
 	
 	public static int _i(String name, String key) {
-		return Integer.parseInt(_(name, key));
+		return Integer.parseInt(__(name, key));
 	}
 
 	public static double _d(String name, String key) {
-		return Double.parseDouble(_(name, key));
+		return Double.parseDouble(__(name, key));
 	}
 
 	public float _f(String name, String key) {
-		return Float.parseFloat(_(name, key));
+		return Float.parseFloat(__(name, key));
 	}
 
 }

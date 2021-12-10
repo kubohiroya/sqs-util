@@ -26,104 +26,41 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import java.util.concurrent.ConcurrentMap;
+import org.mapdb.DBMaker;
+/*
 import org.xtreemfs.babudb.BabuDBFactory;
 import org.xtreemfs.babudb.api.BabuDB;
 import org.xtreemfs.babudb.api.DatabaseManager;
 import org.xtreemfs.babudb.api.database.Database;
 import org.xtreemfs.babudb.api.exception.BabuDBException;
 import org.xtreemfs.babudb.config.ConfigBuilder;
+*/
 
 public class ObjectStore{
 
-	public static class ObjectStoreException extends IOException{
-		public static final long serialVersionUID = 0L;
-		public ObjectStoreException(Exception ex){
-			super(ex);
-		}
-	}
-	
-	public static class ObjectMarshalizer{
-		public static byte[] toBytes(Object o)throws IOException{
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(bos);
-			oos.writeObject(o);
-			oos.flush();
-			return bos.toByteArray();
-		}
-		
-		public static Object toObject(byte[] b)throws IOException, ClassNotFoundException{
-			ByteArrayInputStream bis = new ByteArrayInputStream(b);
-			ObjectInputStream ois = new ObjectInputStream(bis);
-			return ois.readObject();
-		}
-	}
-	
 	public static final String ENCODING = "UTF-8";
 	
 	private static Map<File, ObjectStore> instanceMap = new HashMap<File, ObjectStore>();
-	private BabuDB dbSystem;
+	private org.mapdb.DB db;
 
-	public synchronized static ObjectStore getInstance(File dir, String dirname) throws ObjectStoreException {
-		try{
-			File path = createStorageDirectory(dir, dirname);
-			return ObjectStore.getInstance(path);
-		}catch(IOException ex){
-			throw new ObjectStoreException(ex);
-		}
+	public synchronized static ObjectStore getInstance(File dir, String dirname) throws IOException{
+		File path = createStorageDirectory(dir, dirname);
+		return ObjectStore.getInstance(path);
 	}
 
-	private ObjectStore(File directory) throws ObjectStoreException {
-		try{
-			this.dbSystem = BabuDBFactory.createBabuDB(new ConfigBuilder().setDataPath(directory.getAbsolutePath()).build());
-		}catch(BabuDBException ex){
-			throw new ObjectStoreException(ex);
-		}
+	private ObjectStore(File directory) {
+		this.db = DBMaker.fileDB(directory.getAbsolutePath()).make();
 	}
 
-	public ObjectStoreAccessor getAccessor(String name) throws ObjectStoreException{
-		DatabaseManager dbm = this.dbSystem.getDatabaseManager();
-		Database db = null;
-		try{
-			db = dbm.getDatabase(name);
-		}catch(BabuDBException ex){
-			try{
-				db = dbm.createDatabase(name, 1);
-			}catch(BabuDBException ex2){
-				throw new ObjectStoreException(ex);
-			}
-		}
-		return new ObjectStoreAccessor(db);
+	public ObjectStoreAccessor getAccessor(String name) {
+		ConcurrentMap map = db.hashMap(name).createOrOpen();
+		return new ObjectStoreAccessor(map);
 	}
 
-	public void delete(String name)throws ObjectStoreException{
-		try{
-			DatabaseManager dbm = this.dbSystem.getDatabaseManager();
-			if(dbm.getDatabase(name) != null){
-				dbm.deleteDatabase(name);	
-			}
-		}catch(BabuDBException ex){
-			throw new ObjectStoreException(ex);
-		}
-	}
-	
-
-	public static void closeAll() throws BabuDBException{
-		for(ObjectStore objectStore : ObjectStore.instanceMap.values()) {
-			objectStore.close();
-		}
-	}
-	
-	public void close() throws BabuDBException{
-		shutdown();
-	}
-
-	public void shutdown() throws BabuDBException{
-		for (Database db: this.dbSystem.getDatabaseManager().getDatabases().values()){
-			db.shutdown();
-		}
-		this.dbSystem.shutdown();
+	public void shutdown() {
+		db.commit();
+		db.close();
 	}
 
 	private static File createStorageDirectory(File dir, String dirname) throws IOException {
@@ -152,7 +89,7 @@ public class ObjectStore{
 		}
 	}
 
-	private synchronized static ObjectStore getInstance(File directory) throws ObjectStoreException {
+	private synchronized static ObjectStore getInstance(File directory) {
 		ObjectStore ret = ObjectStore.instanceMap.get(directory);
 		if (ret == null) {
 			ret = new ObjectStore(directory);

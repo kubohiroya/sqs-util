@@ -38,21 +38,15 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.log4j.Logger;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
-import org.apache.xmlgraphics.image.codec.tiff.TIFFDecodeParam;
-import org.apache.xmlgraphics.image.codec.tiff.TIFFEncodeParam;
-import org.apache.xmlgraphics.image.codec.tiff.TIFFImageDecoder;
-import org.apache.xmlgraphics.image.codec.tiff.TIFFImageEncoder;
+import org.apache.xmlgraphics.image.codec.tiff.*;
 import org.apache.xmlgraphics.image.codec.util.FileCacheSeekableStream;
 
-import com.lowagie.text.pdf.PdfReader;
-
-//import com.lowagie.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.*;
 
 public class ImageFactory {
 
@@ -69,7 +63,7 @@ public class ImageFactory {
 		public ImageTypeIO get(String imageType){
 			ImageTypeIO imageTypeIO = super.get(imageType.toLowerCase());
 			if(imageTypeIO == null){
-				Logger.getLogger(ImageFactory.class.getName()).info("Not Supported:"+imageType);
+				// Logger.getLogger(ImageFactory.class.getName()).info("Not Supported:"+imageType);
 				return defaultImageTypeIO;
 			}else{
 				return imageTypeIO; 
@@ -111,7 +105,7 @@ public class ImageFactory {
 		try{
 			return imageTypeIOMap.get(imageType).createImage(file, index);
 		}catch(IOException ex){
-			Logger.getLogger("IOException:"+file+" "+index);
+			// Logger.getLogger("IOException:"+file+" "+index);
 			throw ex;
 		}
 	}
@@ -175,7 +169,6 @@ public class ImageFactory {
 			return createImage(new ByteArrayInputStream(bytes), index);
 		}
 		
-		@Override
 		public BufferedImage createImage(File file, int index) throws IOException {
 			InputStream in = null;
 			try{
@@ -187,7 +180,6 @@ public class ImageFactory {
 			}
 		}
 		
-		@Override
 		public int getNumPages(File file)throws IOException{
 			InputStream in = new BufferedInputStream(new FileInputStream(file));
 			try{
@@ -199,27 +191,22 @@ public class ImageFactory {
 			}
 		}
 		
-		@Override
 		public HashMap<String,?> getMetadataMap(InputStream in)throws IOException{
 			throw new IOException("not supported");	
 		}
 		
-		@Override
 		public byte[] writeImage(BufferedImage image) throws IOException{
 			throw new IOException("not supported");	
 		}
 		
-		@Override
 		public void writeImage(BufferedImage image, OutputStream out) throws IOException{
 			throw new IOException("not supported");	
 		}
 		
-		@Override
 		public void writeImage(BufferedImage image, File imageFile) throws IOException{
 			throw new IOException("not supported");	//override
 		}
 		
-		@Override
 		public int getNumPages(InputStream in)throws IOException{
 			throw new IOException("not supported");
 		}
@@ -227,12 +214,10 @@ public class ImageFactory {
 
 	public static class DefaultImageTypeIO extends AbstractImageTypeIO{
 		
-		@Override
 		public BufferedImage createImage(InputStream in)throws IOException{
 			throw new IOException("not supported");
 		}
 		
-		@Override
 		public BufferedImage createImage(InputStream in, int index)throws IOException{
 			throw new IOException("not supported");
 		}
@@ -248,12 +233,10 @@ public class ImageFactory {
 		
 		public static final boolean IGNORE_PDF_FILES_CREATED_BY_SQS = true; 
 
-		@Override
 		public BufferedImage createImage(InputStream in)throws IOException{
 			return createImage(in, 0);
 		}
 
-		@Override
 		public BufferedImage createImage(InputStream in, int index)throws IOException{
 		     PDFParser pdfParser = new PDFParser(in);
 		     pdfParser.parse();
@@ -274,8 +257,8 @@ public class ImageFactory {
 			PdfReader reader = null;
 			try{
 				reader = new PdfReader(in);
-				HashMap<String,Integer> map = reader.getInfo();
-				map.put("NumberOfPages", reader.getNumberOfPages());
+				HashMap<String,String> map = reader.getInfo();
+				map.put("NumberOfPages", String.valueOf(reader.getNumberOfPages()));
 				return map;
 			} finally{
 				try{
@@ -308,12 +291,10 @@ public class ImageFactory {
 		public BatikTIFFImageTypeIO() {
 		}
 
-		@Override
 		public BufferedImage createImage(InputStream in)throws IOException{
 			return createImage(in, 0);
 		}
 		
-		@Override
 		public BufferedImage createImage(InputStream in, int index)throws IOException{
 			FileCacheSeekableStream seekableStream = null;
 			try {
@@ -361,11 +342,11 @@ public class ImageFactory {
 				TIFFEncodeParam param = new TIFFEncodeParam();  
 				int pixelSize = bufferedImage.getColorModel().getPixelSize();
 				if(1 == pixelSize){
-					param.setCompression(TIFFEncodeParam.COMPRESSION_PACKBITS);
+					param.setCompression(CompressionValue.PACKBITS);
 				}else if(8 == pixelSize){
-					param.setCompression(TIFFEncodeParam.COMPRESSION_DEFLATE);
+					param.setCompression(CompressionValue.DEFLATE);
 				}else if(24 == pixelSize){
-					param.setCompression(TIFFEncodeParam.COMPRESSION_JPEG_TTN2);
+					param.setCompression(CompressionValue.JPEG_TTN2);
 				}
 
 				//param.setWriteTiled(true);
@@ -391,7 +372,6 @@ public class ImageFactory {
 			this.imageType = imageType;
 		}
 		
-		@Override
 		public BufferedImage createImage(InputStream in, int index)throws IOException{
 			if(0 == index){
 				return createImage(in);

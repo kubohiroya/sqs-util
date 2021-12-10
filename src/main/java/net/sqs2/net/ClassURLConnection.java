@@ -8,20 +8,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Logger;
 
-import javax.jnlp.DownloadService;
-import javax.jnlp.ServiceManager;
-import javax.jnlp.UnavailableServiceException;
+// import javax.jnlp.DownloadService;
+// import javax.jnlp.ServiceManager;
+// import javax.jnlp.UnavailableServiceException;
 
 public class ClassURLConnection extends URLConnection {
-
-	static DownloadService ds;
-	static{
-		try { 
-			ds = (DownloadService)ServiceManager.lookup("javax.jnlp.DownloadService"); 
-		} catch (UnavailableServiceException e) { 
-			ds = null; 
-		}
-	}
 
 	public ClassURLConnection(URL url) {
 		super(url);
@@ -56,27 +47,10 @@ public class ClassURLConnection extends URLConnection {
 			
 		} else if ("http".equals(this.url.getProtocol())) {
 			
-			if (ds != null) { 
-		        try { 
-		            // determine if a particular resource is cached
-		            boolean cached = ds.isResourceCached(url, null);
-		            if(!cached){
-		            	// Logger.getLogger(getClass().getName()).info("download jar:"+this.url.toString());
-		            	ds.loadResource(url, null, null);
-		            }else{
-		            	// Logger.getLogger(getClass().getName()).info("cached jar:"+this.url.toString());
-		            }
-		        } catch (Exception e) { 
-		        	e.printStackTrace(); 
-		        }
-		        
-		        return null;
-		        
-			}else{
 				Logger.getLogger(getClass().getName()).info("DownloadService is disabled:"+this.url.toString());
 				return super.getInputStream();
 				//return new sun.net.www.protocol.http.HttpURLConnection(url, null).getInputStream();
-			}
+
 		} else if ("file".equals(this.url.getProtocol())) {
 			return new BufferedInputStream(new FileInputStream(this.url.getPath()));
 			
