@@ -31,18 +31,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.io.RandomAccessBuffer;
 import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.xmlgraphics.image.codec.tiff.*;
 import org.apache.xmlgraphics.image.codec.util.FileCacheSeekableStream;
 
@@ -238,18 +237,19 @@ public class ImageFactory {
 		}
 
 		public BufferedImage createImage(InputStream in, int index)throws IOException{
-		     PDFParser pdfParser = new PDFParser(in);
+		     PDFParser pdfParser = new PDFParser(new RandomAccessBuffer(in));
 		     pdfParser.parse();
 		     PDDocument pdf = pdfParser.getPDDocument();
-		     List<?> pages = pdf.getDocumentCatalog().getAllPages();
-		     PDPage page = (PDPage)pages.get(index);
+		     PDPageTree pages = pdf.getDocumentCatalog().getPages();
+		     PDPage page = pages.get(index);
 		     PDResources resources = page.getResources();
-		     Map<String,PDXObjectImage> images = resources.getImages();
-		     if (images != null) {
-		    	 for(PDXObjectImage image : images.values()){
-		             return image.getRGBImage();
-		         }
-		     }
+			 for(COSName name: resources.getXObjectNames()){
+				 if(resources.isImageXObject(name)){
+					 PDXObject obj = resources.getXObject(name);
+					 InputStream stream = obj.getStream().createInputStream();
+					 return ImageIO.read(stream);
+				 }
+			 }
 		     throw new IOException();
 		}
 		
